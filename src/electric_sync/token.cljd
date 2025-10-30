@@ -1,0 +1,27 @@
+(ns electric-sync.token
+  (:require 
+   [cljd-utils.pref :as pref]
+   [electric-sync.state :as state]))
+
+(defn save-token [token]
+  (reset! state/token token)
+  (pref/set-value {:key "token" :value token :type :string}))
+
+(defn save-uid [uid]
+  (reset! state/uid uid)
+  (pref/set-value {:key "uid" :value uid :type :string}))
+
+(defn get-token []
+  @state/token)
+
+(defn get-uid []
+  @state/uid)
+
+(defn token-from-pref []
+  (await (pref/get-value {:key "token" :type :string})))
+  
+(defn init []
+  (let [token (await (token-from-pref))
+        uid (await (pref/get-value {:key "uid" :type :string}))]
+    (reset! state/token token)
+    (reset! state/uid uid)))

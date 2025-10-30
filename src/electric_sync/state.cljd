@@ -1,0 +1,8 @@
+(ns electric-sync.state)
+
+;; lock 
+(def locked (atom false))
+
+(def token (atom ""))
+
+(def uid (atom ""))

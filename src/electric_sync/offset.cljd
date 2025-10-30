@@ -1,0 +1,28 @@
+(ns electric-sync.offset
+  (:require 
+   [cljd-utils.pref :as pref]))
+   
+(defn save-offset [uid table offset]
+  (await (pref/set-value {:key (str uid "-" table) :value offset :type :string})))
+  
+(defn get-offset [uid table]
+  (let [result (await (pref/get-value {:key (str uid "-" table) :type :string}))]
+    (if (empty? result)
+      "-1"
+      result)))
+
+(defn save-handle [uid table handle]
+  (let [k (str uid "-" table "-handle")]
+    (pref/set-value {:key k :value handle :type :string})))
+
+(defn get-handle [uid table]
+  (let [k (str uid "-" table "-handle")
+        result (await (pref/get-value {:key k :type :string}))]
+    (if (empty? result)
+      ""
+      result)))
+
+(defn clear [uid table]
+  (pref/remove-value (str uid "-" table "-handle"))
+  (pref/remove-value (str uid "-" table)))
+

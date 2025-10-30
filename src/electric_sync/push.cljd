@@ -1,0 +1,26 @@
+(ns electric-sync.push
+  (:require 
+   [cljd-utils.http :as http]
+   [electric-sync.state :as state]
+   [electric-sync.token :as token]))
+
+(defn- success-callback [callback _ body]
+  (when callback
+    (callback body)))
+
+(defn- error-callback [callback _ body]
+  (when callback
+    (callback body)))
+
+(defn- error-catch [callback err]
+  (when callback
+    (callback err)))
+
+(defn push-data [base-url table data {:keys [success error catch]}]
+  (http/post-data (str base-url "/record/" table "/update")
+                  {:params data
+                   :headers {"Content-Type" "application/json; charset=UTF-8"
+                             "Authorization" (str "Barear " @state/token)}
+                   :success (partial success-callback success)
+                   :error (partial error-callback error)
+                   :catch-error (partial error-catch catch)}))

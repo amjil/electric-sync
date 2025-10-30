@@ -1,0 +1,41 @@
+(ns electric-sync.auth
+  (:require
+   ["dart:core" :as core]
+   [cljd-utils.http :as http]
+   [electric-sync.token :as token]))
+
+(defn- success-callback [callback _ body]
+  (let [token (get body "token")
+        uid (get body "userId")]
+    (token/save-token token)
+    (token/save-uid uid))
+  (when callback
+    (callback body)))
+
+(defn- error-callback [callback _ body]
+  (when callback
+    (callback body)))
+
+(defn- error-catch [callback err]
+  (when callback
+    (callback err)))
+
+(defn login [base-url params {:keys [success error catch]}]
+  (let [url (str base-url "/auth/login")
+        uri (core/Uri.parse url)
+        headers {"Content-Type" "application/json; charset=UTF-8"}]
+    (http/post-data uri {:headers headers
+                         :params params
+                         :success (partial success-callback success)
+                         :error (partial error-callback error)
+                         :catch-error (partial error-catch catch)})))
+
+(defn register [base-url params {:keys [success error catch]}]
+  (let [url (str base-url "/auth/register")
+        uri (core/Uri.parse url)
+        headers {"Content-Type" "application/json; charset=UTF-8"}]
+    (http/post-data uri {:headers headers
+                         :params params
+                         :success (partial success-callback success)
+                         :error (partial error-callback error)
+                         :catch-error (partial error-catch catch)})))

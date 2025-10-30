@@ -1,0 +1,59 @@
+(ns electric-sync.pull
+  (:require 
+   [cljd-utils.http :as http]
+   [electric-sync.offset :as offset]
+   [electric-sync.state :as state]))
+
+(declare fetch-data)
+
+(defn- update-records [body]
+  (doseq [item body]
+    (let [headers (get item "headers")
+          operation (get headers "operation")]
+      (cond
+        (string? operation)
+        ;; operation [ insert update delete ]
+        ;; if delete, set the is_delete to true
+        (do
+          ;; todo here 
+          true)
+
+        :else
+        ;; nothing to do this condition
+        true)))
+  true)
+
+(defn- success-callback [base-url table fns callback headers body]
+  (when callback
+    (let [result (callback body)
+          uid @state/uid]
+      (when (true? result)
+        (offset/save-offset uid table (get headers "electric-offset"))
+        (offset/save-handle uid table (get headers "electric-handle"))
+        (let [is-up-to-date (get headers "electric-up-to-date")]
+          (when (nil? is-up-to-date)
+            (fetch-data base-url table fns)))))))
+
+(defn- error-callback [callback _ body]
+  (when callback
+    (callback body)))
+
+(defn- error-catch [callback err]
+  (when callback
+    (callback err)))
+
+(defn fetch-data [base-url table {:keys [error catch] :as fns}]
+  (let [uid @state/uid
+        offset (await (offset/get-offset uid table))
+        handle (await (offset/get-handle uid table))]
+    (http/get-data (str base-url "/sync/shape")
+                   {:params {"table" table 
+                             "offset" offset
+                             "handle" handle}
+                    :headers {"Content-Type" "application/json; charset=UTF-8"
+                              "Authorization" (str "Barear " @state/token)}
+                    :success (partial success-callback base-url table fns update-records) 
+                    :error (partial error-callback error) 
+                    :catch-error (partial error-catch catch)})))
+
+
