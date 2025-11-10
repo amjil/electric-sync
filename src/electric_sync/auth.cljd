@@ -6,9 +6,11 @@
 
 (defn- success-callback [callback _ body]
   (let [token (get body "token")
-        uid (get body "userId")]
+        uid (get body "userId")
+        email (get body "email")]
     (token/save-token token)
-    (token/save-uid uid))
+    (token/save-uid uid)
+    (token/save-email email))
   (when callback
     (callback body)))
 

@@ -11,17 +11,26 @@
   (reset! state/uid uid)
   (pref/set-value {:key "uid" :value uid :type :string}))
 
+(defn save-email [email]
+  (reset! state/email email)
+  (pref/set-value {:key "email" :value email :type :string}))
+
 (defn get-token []
   @state/token)
 
 (defn get-uid []
   @state/uid)
 
+(defn get-email []
+  @state/email)
+
 (defn token-from-pref []
   (await (pref/get-value {:key "token" :type :string})))
   
 (defn init []
   (let [token (await (token-from-pref))
-        uid (await (pref/get-value {:key "uid" :type :string}))]
+        uid (await (pref/get-value {:key "uid" :type :string}))
+        email (await (pref/get-value {:key "email" :type :string}))]
     (reset! state/token token)
-    (reset! state/uid uid)))
+    (reset! state/uid uid)
+    (reset! state/email email)))

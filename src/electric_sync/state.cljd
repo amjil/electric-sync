@@ -6,3 +6,5 @@
 (def token (atom ""))
 
 (def uid (atom ""))
+
+(def email (atom ""))
