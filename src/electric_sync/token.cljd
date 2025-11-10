@@ -34,3 +34,8 @@
     (reset! state/token token)
     (reset! state/uid uid)
     (reset! state/email email)))
+
+(defn clean []
+  (save-email "")
+  (save-uid "")
+  (save-token ""))
